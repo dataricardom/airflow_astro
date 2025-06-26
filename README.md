@@ -1,46 +1,78 @@
-Overview
-========
+# Projeto Airflow com Astro CLI + Docker
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+Este projeto utiliza o **Astro CLI** para subir um ambiente de desenvolvimento com o **Apache Airflow**, utilizando containers Docker.
 
-Project Contents
-================
+## 🔧 Requisitos
 
-Your Astro project contains the following files and folders:
+- Docker instalado e rodando no sistema
+- Astro CLI instalado
+- Linux (Fedora, no meu caso)
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+## 🚀 Configuração
 
-Deploy Your Project Locally
-===========================
+O ambiente foi iniciado com o comando:
 
-Start Airflow on your local machine by running 'astro dev start'.
+```bash
+astro dev init
+```
 
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
+E executado com:
 
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+```bash
+astro dev start
+```
 
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+## ⚠️ Ajuste necessário para evitar erro com QEMU
 
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+Por padrão, o Astro CLI pode tentar usar o engine `qemu` ao invés do Docker, especialmente se ele não encontrar o Docker corretamente ou se não estiver configurado explicitamente.
 
-Deploy Your Project to Astronomer
-=================================
+Isso pode causar o seguinte erro ao tentar iniciar o projeto:
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+```
+running engine: engine linux/qemu failed to run: running VM: running virtiofsd for /home: signal: bad system call (core dumped)
+```
 
-Contact
-=======
+### ✅ Solução aplicada
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
-# airflow_astro
+Para resolver o problema, foi necessário forçar o Astro CLI a usar o **engine Docker**:
+
+```bash
+export ASTRO_ENGINE=docker
+astro dev start
+```
+
+> **Dica:** Para tornar isso permanente, adicione ao seu `~/.bashrc` ou `~/.zshrc`:
+
+```bash
+export ASTRO_ENGINE=docker
+```
+
+## 📁 Estrutura básica do projeto
+
+```text
+.
+├── dags/                  # Onde ficam as DAGs do Airflow
+├── Dockerfile             # Imagem customizada (se necessário)
+├── include/               # Arquivos auxiliares, scripts SQL etc.
+├── plugins/               # Plugins personalizados do Airflow
+├── requirements.txt       # Dependências adicionais do projeto
+└── .astro/                # Configurações internas do Astro CLI
+```
+
+## 🧪 Testando DAGs
+
+Basta adicionar arquivos `.py` com DAGs no diretório `dags/`. O Airflow carregará automaticamente sem a necessidade de reiniciar o container (modo dev ativo).
+
+## 📌 Observações
+
+- O PostgreSQL interno do Airflow usa a porta padrão `5432`. Se já houver outro PostgreSQL rodando, edite o `docker-compose.override.yml` para evitar conflito de portas.
+
+## ✅ Status
+
+✅ Ambiente funcionando com Astro CLI e Docker  
+✅ DAGs detectadas automaticamente  
+✅ Conexões testadas com sucesso no Airflow UI
+
+---
+
+Criado por [Seu Nome]
