@@ -75,4 +75,4 @@ Basta adicionar arquivos `.py` com DAGs no diretório `dags/`. O Airflow carrega
 
 ---
 
-Criado por [Seu Nome]
+Criado por Ricardo Marques
